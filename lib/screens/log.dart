@@ -16,7 +16,7 @@ class _LogPageState extends State<LogPage> {
       lastDate: DateTime(2024), // You can set the last date according to your requirement
       initialDateRange: myDateRange ?? DateTimeRange(
         start: DateTime.now(),
-        end: DateTime.now().add(Duration(days: 5)),
+        end: DateTime.now(),
       ),
     );
 
@@ -51,7 +51,7 @@ class _LogPageState extends State<LogPage> {
               color: Colors.black,
             ),
           ),
-          backgroundColor: Colors.lightGreen,
+          backgroundColor: Colors.yellow,
           automaticallyImplyLeading: false,
           shape: ContinuousRectangleBorder(
             borderRadius: BorderRadius.vertical(

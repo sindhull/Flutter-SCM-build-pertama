@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'apk_sindhu',
+      title: 'Skyward Lockdown',
       theme: lightMode,
       home: const WelcomeScreen(),
     );

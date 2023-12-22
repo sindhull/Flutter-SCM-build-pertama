@@ -24,41 +24,48 @@ class _HomePageState extends State<HomePage> {
   Map _detail = {};
 
   Future<void> getDetailUser() async {
-    setState(() {
-      fetching = true;
-    });
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    var response = await http.get(Uri.parse("${baseUrl()}/users/current/${prefs.getInt("userId")}"), headers: {
-      "Authorization": prefs.getString("access")!
-    });
-
-    if (kDebugMode) {
-      print(response.statusCode);
-      print(response.request!.url);
-      print(response.body);
-    }
-
-    if (response.statusCode == 200) {
+    try {
       setState(() {
-        _detail = json.decode(response.body)['data'].first;
+        fetching = true;
+      });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      var response = await http.get(Uri.parse("${baseUrl()}/users/current/${prefs.getInt("userId")}"), headers: {
+        "Authorization": prefs.getString("access")!
       });
 
-      if(prefs.getString("username") == null){
-        prefs.setString("username", json.decode(response.body)['data'].first['username']);
+      if (kDebugMode) {
+        print(response.statusCode);
+        print(response.request!.url);
+        print(response.body);
       }
-    } else if (response.statusCode == 400) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.remove("access");
-      prefs.remove("userId");
-      Get.offAll(SignInScreen());
-    } else {
-      warning(context, json.decode(response.body)['message']);
-    }
 
-    setState(() {
-      fetching = false;
-    });
+      if (response.statusCode == 200) {
+        setState(() {
+          _detail = json.decode(response.body)['data'].first;
+        });
+
+        if(prefs.getString("username") == null){
+          prefs.setString("username", json.decode(response.body)['data'].first['username']);
+        }
+      } else if (response.statusCode == 400) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.remove("access");
+        prefs.remove("userId");
+        Get.offAll(SignInScreen());
+      } else {
+        warning(context, json.decode(response.body)['message']);
+      }
+
+      setState(() {
+        fetching = false;
+      });
+    } catch (e) {
+      setState(() {
+        fetching = false;
+      });
+      print(e);
+    }
   }
 
   @override
@@ -120,116 +127,116 @@ class _HomePageState extends State<HomePage> {
         ),
       )
           : RefreshIndicator(
-            onRefresh: () async {
-              await getDetailUser();
-            },
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.lightGreen,
-                      borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(45.0),
-                        bottomLeft: Radius.circular(45.0),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.only(bottom: 25.0),
-                                child: Row(
+        onRefresh: () async {
+          await getDetailUser();
+        },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.lightGreen,
+                  borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(45.0),
+                    bottomLeft: Radius.circular(45.0),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.only(bottom: 25.0),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(top: 10.0), // Atur posisi gambar kebawah
+                                  child: CircleAvatar(
+                                    backgroundImage: AssetImage('assets/images/sindu.png'),
+                                    backgroundColor: Colors.blue,
+                                    radius: 25,
+                                  ),
+                                ),
+                                SizedBox(width: 10), // Tambahkan spasi antara gambar dan teks
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 10.0), // Atur posisi gambar kebawah
-                                      child: CircleAvatar(
-                                        backgroundImage: AssetImage('assets/images/sindu.png'),
-                                        backgroundColor: Colors.blue,
-                                        radius: 25,
+                                    Text(
+                                      'Halo, ${_detail['nama'] ?? 'Pengguna'}!',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 18,
+                                        color: Colors.black,
                                       ),
                                     ),
-                                    SizedBox(width: 10), // Tambahkan spasi antara gambar dan teks
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Halo, ${_detail['nama'] ?? 'Pengguna'}!',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 18,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          'Selamat datang!',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'Selamat datang!',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              //... Bagian lain dari tampilan Anda
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 10,),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 25,),
-                  Center(
-                    child: Text(
-                      'Static Drone Blocker SP17',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                          //... Bagian lain dari tampilan Anda
+                        ],
                       ),
-                      textAlign: TextAlign.center,
                     ),
+                    SizedBox(height: 10,),
+                  ],
+                ),
+              ),
+              SizedBox(height: 25,),
+              Center(
+                child: Text(
+                  'Static Drone Blocker SP17',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
                   ),
-                  SizedBox(height: 35),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/static.jpg',
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        height: 250,
-                        fit: BoxFit.fill,
-                      ),
-                    ],
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 35),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/static.jpg',
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    height: 250,
+                    fit: BoxFit.fill,
                   ),
-                  SizedBox(height: 30),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      'SP17 merupakan static drone blocker yang diperuntukkan untuk lingkungan berbahaya tinggi, seperti lapangan peperangan, kawasan yang rawan bencana, atau lingkungan dengan hutan yang lebat. Blocker ini memiliki fitur cancelling system yang memungkinkan drone agak melambat dan terlihat mengalir melalui barrier. Fitur ini bertujuan untuk mengurangi tingkat kerugian dan potensi terjadinya insiden yang melibatkan drone dan operator yang melakukan uji drone di area yang berbahaya tinggi.'
-                          '\n\nSelain itu, SP17 juga dilengkapi dengan fitur system real-time monitoring. Operator dapat mengakses dan mengontrol blocker melalui antarmuka pengontrol yang telah diintegrasikan dengan sistem drone yang digunakan. Fitur ini sangat berguna untuk mengawasi dan mengendalikan kegiatan drone yang melanggar aturan lingkungan berbahaya tinggi.'
-                          '\n\nSecara keseluruhan, Static Drone Blocker SP17 merupakan solusi canggih yang sangat berguna untuk lingkungan yang rawan terhadap kegiatan drone. Blocker ini menjamin keselamatan dan kenyamanan bagi operator yang melakukan uji drone di area yang berbahaya tinggi.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.justify,
-                    ),
-                  ),
-                  SizedBox(height: 30),
                 ],
               ),
-            ),
+              SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'SP17 merupakan static drone blocker yang diperuntukkan untuk lingkungan berbahaya tinggi, seperti lapangan peperangan, kawasan yang rawan bencana, atau lingkungan dengan hutan yang lebat. Blocker ini memiliki fitur cancelling system yang memungkinkan drone agak melambat dan terlihat mengalir melalui barrier. Fitur ini bertujuan untuk mengurangi tingkat kerugian dan potensi terjadinya insiden yang melibatkan drone dan operator yang melakukan uji drone di area yang berbahaya tinggi.'
+                      '\n\nSelain itu, SP17 juga dilengkapi dengan fitur system real-time monitoring. Operator dapat mengakses dan mengontrol blocker melalui antarmuka pengontrol yang telah diintegrasikan dengan sistem drone yang digunakan. Fitur ini sangat berguna untuk mengawasi dan mengendalikan kegiatan drone yang melanggar aturan lingkungan berbahaya tinggi.'
+                      '\n\nSecara keseluruhan, Static Drone Blocker SP17 merupakan solusi canggih yang sangat berguna untuk lingkungan yang rawan terhadap kegiatan drone. Blocker ini menjamin keselamatan dan kenyamanan bagi operator yang melakukan uji drone di area yang berbahaya tinggi.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+              ),
+              SizedBox(height: 30),
+            ],
           ),
+        ),
+      ),
     );
   }
 }

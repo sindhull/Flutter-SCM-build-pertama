@@ -44,7 +44,7 @@ class _EditJammerPageState extends State<EditJammerPage> {
       print(data);
 
       final Uri uri = Uri.parse("${baseUrl()}/dblockers/${widget.data['id']}"); // Ganti dengan API endpoint Anda
-
+      // print("token: ${prefs.getString("access")!}");
       try {
         final response = await http.patch(
           uri,

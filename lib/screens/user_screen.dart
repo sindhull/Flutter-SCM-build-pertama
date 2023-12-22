@@ -1,21 +1,19 @@
-// DIAMBIL BODY DARI TANGGAL AWAL KE TANGGAL AKHIR DAN DATANYA NANTI DIAMBIL DARI DATABASE
-// NANTI BERARTI TINGGAL MEMBUAT TRIGGER DENGAN PACUAN DATA SESUAI TANGGAL
-
-
 import 'dart:convert';
 
-import 'package:apk_sinduuu/screens/DateLog.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../GlobalVar.dart';
-import '../utils/UserList.dart';
 import 'package:http/http.dart' as http;
 
+import '../GlobalVar.dart';
+import 'DateLog.dart';
+
 class UserPage extends StatefulWidget {
-  const UserPage({Key? key, DateTimeRange? selectedDateRange});
+  final DateTimeRange? selectedDateRange;
+
+  const UserPage({Key? key, this.selectedDateRange}) : super(key: key);
 
   @override
   _LogPageState createState() => _LogPageState();
@@ -26,15 +24,11 @@ class _LogPageState extends State<UserPage> {
   List _log = [];
 
   DateTime date_from() {
-    // Replace this logic with how you obtain the starting date
-    // For example, returning a date 7 days ago from today:
-    return DateTime.now().subtract(Duration(days: 7));
+    return widget.selectedDateRange?.start ?? DateTime.now();
   }
 
   DateTime date_to() {
-    // Replace this logic with how you obtain the ending date
-    // For example, returning today's date:
-    return DateTime.now();
+    return widget.selectedDateRange?.end ?? DateTime.now();
   }
 
   String formattedDate(DateTime dateTime) {
@@ -48,31 +42,18 @@ class _LogPageState extends State<UserPage> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // var response = await http.get(
-    //   Uri.parse("${baseUrl()}/dblockers/logs?from=${formattedDate(date_from())}&to=${formattedDate(date_to())}"),
-    //   headers: {
-    //     "Authorization": prefs.getString("access")!,
-    //     "Content-type" : "application/json"
-    //     // Sesuaikan header lain yang diperlukan untuk otorisasi
-    //   },
-    //
-    // );
-
     Uri uri = Uri.parse("${baseUrl()}/dblockers/logs");
     final newUri = uri.replace(queryParameters: {
       'date_from': formattedDate(date_from()),
       'date_to': formattedDate(date_to()),
     });
-    // print(newUri); //prints http://localhost:8080/country/find?name=uk
-    final response = await http.get(newUri,
-      headers: {
-        "Authorization": prefs.getString("access")!,
-        "Content-type" : "application/json"
-        // Sesuaikan header lain yang diperlukan untuk otorisasi
-      },
-    );
-    // final response = json.decode(getdata.body);
-    print(response);
+
+    final response = await http.get(newUri, headers: {
+      "Authorization": prefs.getString("access")!,
+      "Content-type": "application/json"
+      // Sesuaikan header lain yang diperlukan untuk otorisasi
+    });
+
     if (kDebugMode) {
       print(response.statusCode);
       print(response.request!.url);
@@ -84,7 +65,6 @@ class _LogPageState extends State<UserPage> {
         _log = json.decode(response.body)['data']['logs'];
       });
     } else {
-      // Tangani error, misalnya menampilkan snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(json.decode(response.body)['message']),
@@ -97,7 +77,6 @@ class _LogPageState extends State<UserPage> {
       _isLoading = false;
     });
   }
-
 
   @override
   void initState() {
@@ -133,7 +112,7 @@ class _LogPageState extends State<UserPage> {
           automaticallyImplyLeading: false,
           shape: ContinuousRectangleBorder(
             borderRadius: BorderRadius.vertical(
-              bottom: Radius.circular(30), // Sesuaikan radius lengkung
+              bottom: Radius.circular(30),
             ),
           ),
           centerTitle: true,
@@ -150,31 +129,65 @@ class _LogPageState extends State<UserPage> {
           child: Center(
             child: Column(
               children: [
-                SizedBox(height: 20),
-
                 Expanded(
                   child: _isLoading
                       ? Center(
                     child: Lottie.asset(
-                      'assets/animations/glass.json', // Ganti dengan lokasi file JSON animasi Anda
+                      'assets/animations/glass.json',
                       width: 560,
                       height: 250,
                       fit: BoxFit.cover,
                     ),
                   )
+                      : _log.isEmpty
+                      ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset(
+                          'assets/animations/notfound.json', // Perbaiki path menuju file 'notfound.json'
+                          width: 200,
+                          height: 200,
+                        ),
+                        Text(
+                          'Aktivitas tidak ditemukan',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                       : ListView.builder(
                     itemCount: _log.length,
                     itemBuilder: (context, index) {
-                      return CardPage(
-                        id: _log[index]['id'],
-                        timestamp: _log[index]['timestamp'],
-                        userid: _log[index]['users_id'],
-                        nama: _log[index]['nama_user'],
-                        jammerid: _log[index]['dblocker_id'],
-                        areaname: _log[index]['area_name'],
-                        rcstate: _log[index]['rc_state'],
-                        gpsstate: _log[index]['gps_state'],
-                        // temp: _log[index]['temp'],
+                      return Card(
+                        child: ListTile(
+                          title: Text('${_log[index]['nama_user']}'),
+                          subtitle: Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+                              Text('ID: ${_log[index]['id']}'),
+                              Text(
+                                  'Tanggal: ${_log[index]['timestamp']}'),
+                              Text(
+                                  'User ID: ${_log[index]['users_id']}'),
+                              Text(
+                                  'Jammer ID: ${_log[index]['dblocker_id']}'),
+                              Text(
+                                  'Area Name: ${_log[index]['area_name']}'),
+                              Text(
+                                  'RC State: ${_log[index]['rc_state']}'),
+                              Text(
+                                  'GPS State: ${_log[index]['gps_state']}'),
+                              Text(
+                                  'Temperature: ${_log[index]['temp']}'),
+                              // Tambahkan informasi lain yang diinginkan di sini
+                            ],
+                          ),
+                        ),
                       );
                     },
                   ),

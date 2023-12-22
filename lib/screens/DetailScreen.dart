@@ -37,6 +37,8 @@ class _DetailPageState extends State<DetailPage> {
       },
     );
 
+    // print("response dari detail screen ${response.body}");
+
     if (kDebugMode) {
       print(response.statusCode);
       print(response.request!.url);
@@ -341,7 +343,8 @@ class _DetailPageState extends State<DetailPage> {
                     onPressed: ()async{
                       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-                      var response = await http.delete(Uri.parse("${baseUrl()}/dblockers/${widget.id}"),headers: {
+                      var response = await http.delete(Uri.parse("${baseUrl()}/dblockers/${widget.id}"),
+                          headers: {
                         "Authorization" : prefs.getString("access")!
                       });
 

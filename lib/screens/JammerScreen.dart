@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../GlobalVar.dart';
 import '../Page/AllDronePositions.dart';
-import '../utils/card.dart';
 import 'package:apk_sinduuu/screens/DetailScreen.dart';
 import 'AddJammer.dart';
 
@@ -250,7 +249,6 @@ class _JammerScreenState extends State<JammerScreen> {
                           },
                           body: {
                             "user_id": prefs.getInt("userId").toString(),
-                            "dblocker_id": id.toString(),
                             'username': prefs.getString("username")!,
                             "jammer_rc": rc == "on" ? "off" : "on",
                             "jammer_gps": gps == "on" ? "on" : "off",

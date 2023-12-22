@@ -15,7 +15,7 @@ class _DatePageState extends State<DatePage> {
   Future<void> _selectDateRange(BuildContext context) async {
     final initialDateRange = DateTimeRange(
       start: DateTime.now(),
-      end: DateTime.now().add(Duration(days: 7)),
+      end: DateTime.now(),
     );
 
     final pickedDateRange = await showDateRangePicker(

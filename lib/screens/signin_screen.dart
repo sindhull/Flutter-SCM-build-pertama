@@ -192,6 +192,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                 print(response.body);
                               }
 
+                              print(response.body);
+
                               if(response.statusCode == 200){
                                 addAccess("Bearer ${json.decode(response.body)['data']['token']}",json.decode(response.body)['data']['user_id']);
                                 Get.to(()=> const MainPage(index: 0));
